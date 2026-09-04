@@ -34,17 +34,46 @@ def compute_gleu(predictions: list[str], references: list[str]) -> dict:
     """Compute Sentence-level GLEU score for Grammar Error Correction."""
     try:
         from nltk.translate.gleu_score import sentence_gleu
+
         scores = []
         for pred, ref in zip(predictions, references):
             p_tokens = pred.split()
             r_tokens = ref.split()
             if p_tokens and r_tokens:
                 scores.append(sentence_gleu([r_tokens], p_tokens))
-        avg_gleu = sum(scores) / len(scores) if scores else 0.0
-        return {"gleu_score": round(avg_gleu, 4)}
+        if scores:
+            return {"gleu_score": round(sum(scores) / len(scores), 4)}
     except Exception as e:
-        logger.warning(f"GLEU calculation failed: {e}")
-        return {"gleu_score": 0.0}
+        logger.debug(f"NLTK GLEU fallback to pure Python implementation: {e}")
+
+    from collections import Counter
+
+    scores = []
+    for pred, ref in zip(predictions, references):
+        p_tokens = pred.split()
+        r_tokens = ref.split()
+        if not p_tokens or not r_tokens:
+            continue
+
+        p_ngrams = Counter(
+            tuple(p_tokens[i : i + n])
+            for n in range(1, 5)
+            for i in range(len(p_tokens) - n + 1)
+        )
+        r_ngrams = Counter(
+            tuple(r_tokens[i : i + n])
+            for n in range(1, 5)
+            for i in range(len(r_tokens) - n + 1)
+        )
+        tpfp = sum(p_ngrams.values())
+        tpfn = sum(r_ngrams.values())
+        overlap = p_ngrams & r_ngrams
+        tp = sum(overlap.values())
+        denom = max(tpfp, tpfn)
+        scores.append(tp / denom if denom > 0 else 0.0)
+
+    avg_gleu = sum(scores) / len(scores) if scores else 0.0
+    return {"gleu_score": round(avg_gleu, 4)}
 
 
 def compute_cer_wer(predictions: list[str], references: list[str]) -> dict:
