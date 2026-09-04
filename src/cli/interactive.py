@@ -1,10 +1,10 @@
-from src.utils import set_seed, setup_logger
-from src.inference import GrammarCorrector
-from src.config import load_config
-import src
 import argparse
 import sys
 from pathlib import Path
+
+from src.config import load_config
+from src.inference import GrammarCorrector
+from src.utils import set_seed, setup_logger
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -27,7 +27,7 @@ def main():
     logger = setup_logger(__name__)
 
     # Initialize corrector
-    logger.info(f"Loading model...")
+    logger.info("Loading model...")
     corrector = GrammarCorrector(args.config)
 
     if args.text:

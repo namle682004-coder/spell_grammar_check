@@ -11,7 +11,7 @@ def test_extract_corrections_diff_alignment():
 
     # Should detect insertions/replacements without word index shifting
     assert len(errors) > 0
-    
+
     # Check that "Tôi" and "học" were recognized as matching and didn't trigger cascaded errors
     originals_flagged = [e["original"] for e in errors]
     assert "Tôi" not in originals_flagged

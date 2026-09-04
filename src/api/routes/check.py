@@ -1,8 +1,10 @@
 import json
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
-from typing import Optional, List
+
 from src.api.dependencies import get_current_user
 from src.services.spell_grammar_service import SpellGrammarService
 

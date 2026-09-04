@@ -80,7 +80,7 @@ Dự án này thực hiện **2 giai đoạn** cho bài toán sửa lỗi chính
 ### Tại Sao Làm Theo Cách Này?
 
 - ✅ **Tiết kiệm thời gian & tài nguyên** - Prompting mất vài phút, finetune mất vài giờ
-- ✅ **Xác thực nhanh** - Biết ngay model base có đủ tốt cho use case của mày không
+- ✅ **Xác thực nhanh** - Đánh giá nhanh model base có phù hợp với bài toán hay không
 - ✅ **Có baseline** - Có số liệu metric trước khi đầu tư finetune
 - ✅ **Tối ưu chi phí** - RTX 3050 chạy inference tốt cho model 1B-3B
 
@@ -541,77 +541,31 @@ MIT License - Free for commercial and personal use.
 - [vLLM](https://vllm.readthedocs.io/)
 - [HuggingFace Transformers](https://huggingface.co/docs/transformers)
 
-Đúng rồi, muốn xử lý văn bản dài nhiều trang thì **bắt buộc phải fine-tune**. Prompting chỉ đủ tốt cho câu ngắn (1-2 câu).
+---
+
+## 🎯 Fine-tuning cho Văn Bản Dài & Dataset Tiếng Việt
+
+Khi xử lý văn bản dài (>5 câu hoặc nhiều trang), phương pháp **Fine-tuning (LoRA/QLoRA)** mang lại độ chính xác cao hơn rõ rệt so với zero-shot / few-shot prompting:
+
+| Loại input           | Khả năng xử lý qua Prompting (Qwen 1.5B) | Giải pháp khuyến nghị |
+| -------------------- | ---------------------------------------- | --------------------- |
+| Câu ngắn (1-2 câu)   | ✅ Tốt                                   | Prompting / Base Model |
+| Đoạn văn (3-5 câu)   | ⚠️ Trung bình (dễ lệch ngữ cảnh)         | Few-shot / LoRA Fine-tune |
+| Văn bản dài (>5 câu) | ❌ Kém (dễ hallucination)                | Fine-tuning bắt buộc  |
 
 ---
 
-## 📊 Tình hình hiện tại của mày:
+### Dataset Tiếng Việt cho Fine-tuning
 
-| Loại input           | Model hiện tại (Qwen 1.5B + prompting) | Kết luận            |
-| -------------------- | -------------------------------------- | ------------------- |
-| Câu ngắn (1-2 câu)   | ✅ Tốt                                 | Dùng được           |
-| Đoạn văn (3-5 câu)   | ⚠️ Trung bình                          | Hay bị sai nội dung |
-| Văn bản dài (>5 câu) | ❌ Kém                                 | Không dùng được     |
-
----
-
-## 🎯 Dataset tiếng Việt cho fine-tune grammar correction:
-
-Dưới đây là các dataset có sẵn trên HuggingFace, tất cả đều **miễn phí**:
-
-### 1. **PaulTran/vietnamese_spelling_error_detection**
-
-- **Định dạng**: `input_text` (có lỗi) → `target_text` (đã sửa)
-- **Số lượng**: ~10,000+ mẫu
-- **Loại lỗi**: thiếu dấu, sai chính tả, lỗi gõ Telex/VNI
-- **Link**: https://huggingface.co/datasets/PaulTran/vietnamese_spelling_error_detection
-
-### 2. **ShynBui/Vietnamese_spelling_error**
-
-- **Định dạng**: `text` (có lỗi) → `error_text` (đã sửa)
-- **Số lượng**: 422,209 mẫu
-- **Dung lượng**: ~119MB
-- **Link**: https://huggingface.co/datasets/ShynBui/Vietnamese_spelling_error
-
-### 3. **bmd1905/error-correction-vi**
-
-- **Định dạng**: câu có lỗi → câu đã sửa
-- **Số lượng**: ~50,000+ mẫu
-- **Nguồn**: từ VNTC (báo chí)
-- **Link**: https://huggingface.co/datasets/bmd1905/error-correction-vi
-
-### 4. **Kaggle: Vietnamese-Correction-Data**
-
-- **Dung lượng**: 3.28GB
-- **Nguồn**: crawl từ báo, sách
-- **Link**: https://www.kaggle.com/datasets/hmaixun/vietnamese-correction-data
+| Dataset | Số lượng mẫu | Đặc điểm | Ứng dụng |
+| --- | --- | --- | --- |
+| **[ShynBui/Vietnamese_spelling_error](https://huggingface.co/datasets/ShynBui/Vietnamese_spelling_error)** | 422,209 | Quy mô lớn, đa dạng lỗi thực tế | Fine-tuning chính |
+| **[PaulTran/vietnamese_spelling_error_detection](https://huggingface.co/datasets/PaulTran/vietnamese_spelling_error_detection)** | 10,000+ | Phân loại lỗi chi tiết (Telex/VNI) | Đánh giá & Benchmark |
+| **[bmd1905/error-correction-vi](https://huggingface.co/datasets/bmd1905/error-correction-vi)** | 50,000+ | Dữ liệu biên tập từ báo chí | Huấn luyện bổ trợ |
 
 ---
 
-## 🚀 Cách tải dataset (dùng `ShynBui/Vietnamese_spelling_error` - lớn nhất):
-
-```python
-from datasets import load_dataset
-
-# Tải dataset
-dataset = load_dataset("ShynBui/Vietnamese_spelling_error")
-
-# Xem cấu trúc
-print(dataset)
-print(dataset['train'][0])
-
-# Kết quả:
-# {
-#   'text': 'câu có lỗi...',
-#   'error_text': 'câu đã sửa...'
-# }
-```
-
----
-
-## 📝 Format dữ liệu cho fine-tune:
-
-Dataset cần format theo dạng instruction cho model:
+### Định dạng dữ liệu huấn luyện (Instruction Format)
 
 ```json
 [
@@ -630,64 +584,10 @@ Dataset cần format theo dạng instruction cho model:
 
 ---
 
-## 🔧 Tạo script chuẩn bị dữ liệu:
+### Lộ trình Fine-tuning mở rộng
+1. **Tải dataset**: Sử dụng `ShynBui/Vietnamese_spelling_error` từ Hugging Face Hub.
+2. **Format dữ liệu**: Chuyển đổi về cấu trúc instruction theo chuẩn ChatML / Alpaca.
+3. **Mô hình nền**: `Qwen2.5-1.5B-Instruct` hoặc `Qwen2.5-3B-Instruct`.
+4. **Tối ưu huấn luyện**: Tận dụng **LoRA / QLoRA 4-bit** với **Unsloth** để kiểm soát VRAM dưới 6-8GB.
+5. **Đánh giá benchmark**: Đo lường định lượng qua bộ chỉ số **GLEU**, **CER/WER**, và **BERTScore**.
 
-```bash
-cat > src/data/prepare_finetune_data.py << 'EOF'
-#!/usr/bin/env python
-import json
-from datasets import load_dataset
-
-def prepare_dataset():
-    # Tải dataset từ HuggingFace
-    dataset = load_dataset("ShynBui/Vietnamese_spelling_error")
-
-    # Format theo instruction
-    formatted_data = []
-    for item in dataset['train']:
-        formatted_data.append({
-            "instruction": "Sửa lỗi chính tả và ngữ pháp trong câu sau.",
-            "input": item['text'],
-            "output": item['error_text']
-        })
-
-    # Lưu thành file JSON
-    with open("data/train_finetune.json", "w", encoding="utf-8") as f:
-        json.dump(formatted_data, f, ensure_ascii=False, indent=2)
-
-    print(f"✅ Đã lưu {len(formatted_data)} mẫu vào data/train_finetune.json")
-
-if __name__ == "__main__":
-    prepare_dataset()
-EOF
-```
-
-Chạy:
-
-```bash
-python src/data/prepare_finetune_data.py
-```
-
----
-
-## 📊 Tổng kết dataset:
-
-| Dataset      | Số lượng | Ưu điểm           | Dùng cho         |
-| ------------ | -------- | ----------------- | ---------------- |
-| **ShynBui**  | 422k     | Lớn nhất, đa dạng | Fine-tune chính  |
-| **PaulTran** | 10k+     | Có phân loại lỗi  | Test, evaluation |
-| **bmd1905**  | 50k+     | Từ báo chí        | Fine-tune thêm   |
-
----
-
-## 🎯 Lộ trình fine-tune cho văn bản dài:
-
-1. **Tải dataset** - `ShynBui/Vietnamese_spelling_error` (422k mẫu)
-2. **Format dữ liệu** - theo instruction format
-3. **Chọn model** - `Qwen2.5-1.5B` hoặc `Qwen2.5-3B` (nếu đủ VRAM)
-4. **Fine-tune với Unsloth** - LoRA, batch_size=1 (vì 4GB)
-5. **Đánh giá** - trên đoạn văn dài
-
----
-
-**Muốn tao viết luôn script fine-tune cho mày không?**

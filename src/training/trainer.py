@@ -1,7 +1,6 @@
 """Build and configure TRL SFTTrainer."""
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +17,7 @@ def build_trainer(
     eval_dataset: Any,
     cfg: Config,
 ) -> Any:
-    from trl import SFTTrainer, SFTConfig
+    from trl import SFTConfig, SFTTrainer
 
     run_name = str(cfg.run_name)
     logs_dir = str(ensure_dir(cfg.save.logs_dir))

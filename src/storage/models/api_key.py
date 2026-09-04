@@ -1,7 +1,9 @@
-from sqlalchemy import Column, String, Boolean, Integer, DateTime, JSON, ForeignKey, Float, Text
-from sqlalchemy.orm import relationship
-from src.storage.base import Base, TimestampMixin, generate_uuid
 import secrets
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+
+from src.storage.base import Base, TimestampMixin, generate_uuid
 
 
 class ApiKey(Base, TimestampMixin):
@@ -23,13 +25,13 @@ class ApiKey(Base, TimestampMixin):
         "style_check": True,
         "batch_process": False
     })
-    
+
     # 👇 SỬA: Giảm rate limits cho free user
     rate_limit_per_second = Column(Integer, nullable=False, default=2)      # 2 req/giây
     rate_limit_per_minute = Column(Integer, nullable=False, default=30)     # 30 req/phút
     rate_limit_per_hour = Column(Integer, nullable=False, default=500)      # 500 req/giờ
     rate_limit_per_day = Column(Integer, nullable=False, default=2000)      # 2000 req/ngày
-    
+
     total_requests = Column(Integer, nullable=False, default=0)
     total_tokens = Column(Integer, nullable=False, default=0)
     total_cost_usd = Column(Float, nullable=False, default=0.0)

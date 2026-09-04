@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from typing import Dict
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+
 from src.api.dependencies import get_current_user
 from src.services.usage_service import UsageService
 
@@ -55,11 +57,11 @@ async def get_api_key_stats(
     result = UsageService.get_api_key_stats(api_key_id)
     if "error" in result:
         raise HTTPException(status_code=404, detail=result["error"])
-    
+
     # Check ownership
     if result.get("user_id") != user["user_id"]:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     return result
 
 @router.get("/dashboard")
@@ -67,7 +69,7 @@ async def get_dashboard(user: dict = Depends(get_current_user)):
     """Get dashboard summary"""
     usage = UsageService.get_user_usage_stats(user["user_id"], 30)
     quota = UsageService.get_quota_info(user["user_id"])
-    
+
     return {
         "user": {
             "user_id": user["user_id"],

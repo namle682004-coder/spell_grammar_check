@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import os
-from pyexpat import model
 from typing import Any
 
 from loguru import logger
@@ -103,7 +102,6 @@ def _load_hf(
 ) -> tuple[Any, Any]:
 
     import torch
-
     from transformers import (
         AutoModelForCausalLM,
         AutoTokenizer,

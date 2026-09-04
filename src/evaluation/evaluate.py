@@ -13,7 +13,7 @@ from src.utils.artifacts import (
     update_latest_pointer,
     write_run_manifest,
 )
-from src.utils.io import read_jsonl, write_json, ensure_dir
+from src.utils.io import ensure_dir, read_jsonl, write_json
 
 
 def run_evaluation(cfg: Config) -> None:

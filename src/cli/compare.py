@@ -7,11 +7,11 @@ from pathlib import Path
 
 from loguru import logger
 
+from src.evaluation.compare import compare_metrics, generate_report
 from src.utils.artifacts import read_latest_metrics_path, update_latest_pointer
 from src.utils.env import load_env
-from src.utils.logging import setup_logging
 from src.utils.io import write_json
-from src.evaluation.compare import compare_metrics, generate_report
+from src.utils.logging import setup_logging
 
 
 def _resolve_metrics_path(

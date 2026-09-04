@@ -7,13 +7,13 @@ from pathlib import Path
 from loguru import logger
 
 from src.config import Config
-from src.training.model_loader import load_model_and_tokenizer
-from src.training.lora import attach_lora
-from src.training.trainer import build_trainer
-from src.training.collator import make_hf_dataset
-from src.utils.artifacts import ArtifactRun, is_versioned, update_latest_pointer, write_run_manifest
-from src.utils.io import ensure_dir, write_json, read_jsonl
 from src.data.formatters import apply_format
+from src.training.collator import make_hf_dataset
+from src.training.lora import attach_lora
+from src.training.model_loader import load_model_and_tokenizer
+from src.training.trainer import build_trainer
+from src.utils.artifacts import ArtifactRun, is_versioned, update_latest_pointer, write_run_manifest
+from src.utils.io import ensure_dir, read_jsonl, write_json
 
 
 def run_training(cfg: Config) -> None:
@@ -108,7 +108,6 @@ def _export_merged(model: Any, tokenizer: Any, cfg: Config) -> None:
     max_mem = float(cfg.save.get("maximum_memory_usage", 0.7))
     logger.info(f"Merging and saving 16-bit model to {merged_path}...")
     try:
-        from unsloth import FastLanguageModel
         model.save_pretrained_merged(
             str(merged_path),
             tokenizer,
@@ -117,7 +116,6 @@ def _export_merged(model: Any, tokenizer: Any, cfg: Config) -> None:
         )
     except Exception:
         # Fallback: standard HF save after merging PEFT
-        from peft import PeftModel
         logger.warning("Unsloth merge failed. Trying PEFT merge_and_unload...")
         merged_model = model.merge_and_unload()
         merged_model.save_pretrained(str(merged_path))

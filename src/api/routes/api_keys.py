@@ -1,6 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
+
 from src.api.dependencies import get_current_user
 from src.services.auth_service import AuthService
 from src.storage.database import get_db_manager
@@ -35,14 +37,14 @@ async def create_api_key(
 ):
     """Create a new API key"""
     from src.services.auth_service import AuthService as Auth
-    
+
     db = get_db_manager()
-    
+
     with db.get_session() as session:
         api_key_repo = ApiKeyRepository(session)
-        
+
         plain_key, hashed_key, prefix = Auth.generate_api_key()
-        
+
         api_key = api_key_repo.create(
             user_id=user["user_id"],
             key_name=req.name,
@@ -53,7 +55,7 @@ async def create_api_key(
             rate_limit_per_day=req.rate_limit_per_day,
             is_active=True
         )
-        
+
         return CreateApiKeyResponse(
             success=True,
             api_key_id=api_key.id,
@@ -81,16 +83,16 @@ async def toggle_api_key(
 ):
     """Enable or disable an API key"""
     db = get_db_manager()
-    
+
     with db.get_session() as session:
         api_key_repo = ApiKeyRepository(session)
-        
+
         api_key = api_key_repo.get_by_id(api_key_id)
         if not api_key or api_key.user_id != user["user_id"]:
             raise HTTPException(status_code=404, detail="API key not found")
-        
+
         api_key_repo.update(api_key_id, is_active=active)
-        
+
         return {
             "success": True,
             "api_key_id": api_key_id,

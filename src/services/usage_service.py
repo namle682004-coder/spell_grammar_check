@@ -1,60 +1,61 @@
 
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict
+
 from src.storage.database import get_db_manager
 from src.storage.repositories import (
-    UserRepository,
     ApiKeyRepository,
     RequestRepository,
-    CorrectionRepository
+    UserRepository,
 )
+
 
 class UsageService:
     """Service for managing usage tracking and quotas"""
-    
+
     @staticmethod
     def get_user_usage_stats(user_id: str, days: int = 30) -> Dict[str, Any]:
         """Get usage statistics for a user"""
         db = get_db_manager()
-        
+
         with db.get_session() as session:
             request_repo = RequestRepository(session)
             user_repo = UserRepository(session)
             api_key_repo = ApiKeyRepository(session)
-            
+
             # Get user info
             user = user_repo.get_by_id(user_id)
             if not user:
                 return {"error": "User not found"}
-            
+
             # Get all API keys for user
             api_keys = api_key_repo.get_all(user_id=user_id)
-            
+
             # Calculate date range
             end_date = datetime.utcnow()
             start_date = end_date - timedelta(days=days)
-            
+
             # Get all requests (lấy hết, filter bằng Python cho đơn giản)
             all_requests = request_repo.get_all(user_id=user_id)
-            
+
             # Filter by date range and status
             successful = [
-                r for r in all_requests 
+                r for r in all_requests
                 if r.status == "success" and r.created_at and r.created_at >= start_date
             ]
-            
+
             # Filter by date range for total
             total_requests = len([r for r in all_requests if r.created_at and r.created_at >= start_date])
-            
+
             # Calculate totals
             successful_requests = len(successful)
             total_tokens = sum((r.input_tokens or 0) + (r.output_tokens or 0) for r in successful)
             total_cost = sum(r.cost_usd or 0 for r in successful)
             total_corrections = sum(r.total_corrections or 0 for r in successful)
-            
+
             # Calculate average processing time
             avg_time = sum(r.processing_time_ms or 0 for r in successful) / max(len(successful), 1)
-            
+
             # Breakdown by request type
             breakdown = {}
             type_counts = {}
@@ -65,14 +66,14 @@ class UsageService:
                 type_counts[req_type]["count"] += 1
                 type_counts[req_type]["total_time"] += r.processing_time_ms or 0
                 type_counts[req_type]["total_corrections"] += r.total_corrections or 0
-            
+
             for req_type, data in type_counts.items():
                 breakdown[req_type] = {
                     "count": data["count"],
                     "avg_processing_ms": data["total_time"] / data["count"] if data["count"] > 0 else 0,
                     "total_corrections": data["total_corrections"]
                 }
-            
+
             # Daily usage
             daily_usage = {}
             for r in successful:
@@ -83,7 +84,7 @@ class UsageService:
                     daily_usage[day]["requests"] += 1
                     daily_usage[day]["tokens"] += (r.input_tokens or 0) + (r.output_tokens or 0)
                     daily_usage[day]["cost"] += r.cost_usd or 0
-            
+
             return {
                 "user_id": user_id,
                 "username": user.username,
@@ -99,24 +100,24 @@ class UsageService:
                 "daily_usage": daily_usage,
                 "api_keys_count": len(api_keys)
             }
-    
+
     @staticmethod
     def get_api_key_stats(api_key_id: str) -> Dict[str, Any]:
         """Get statistics for a specific API key"""
         db = get_db_manager()
-        
+
         with db.get_session() as session:
             api_key_repo = ApiKeyRepository(session)
             request_repo = RequestRepository(session)
-            
+
             api_key = api_key_repo.get_by_id(api_key_id)
             if not api_key:
                 return {"error": "API key not found"}
-            
+
             # Get all requests for this API key
             requests = request_repo.get_all(api_key_id=api_key_id)
             successful = [r for r in requests if r.status == "success"]
-            
+
             return {
                 "api_key_id": api_key_id,
                 "key_name": api_key.key_name,
@@ -133,20 +134,20 @@ class UsageService:
                 "recent_requests_count": len([r for r in requests if r.created_at and r.created_at > datetime.utcnow() - timedelta(hours=24)]),
                 "success_rate": len(successful) / len(requests) if requests else 0
             }
-    
+
     @staticmethod
     def get_quota_info(user_id: str) -> Dict[str, Any]:
         """Get quota information for a user"""
         db = get_db_manager()
-        
+
         with db.get_session() as session:
             user_repo = UserRepository(session)
             request_repo = RequestRepository(session)
-            
+
             user = user_repo.get_by_id(user_id)
             if not user:
                 return {"error": "User not found"}
-            
+
             # Define quota limits based on user role
             quota_limits = {
                 "free": {
@@ -168,34 +169,34 @@ class UsageService:
                     "cost_limit_usd": 100.0
                 }
             }
-            
+
             limits = quota_limits.get(user.role, quota_limits["free"])
-            
+
             # Get current usage this month
             now = datetime.utcnow()
             month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            
+
             # Get all requests
             all_requests = request_repo.get_all(user_id=user_id)
-            
+
             monthly_requests = len([
-                r for r in all_requests 
+                r for r in all_requests
                 if r.status == "success" and r.created_at and r.created_at >= month_start
             ])
-            
+
             daily_requests = len([
-                r for r in all_requests 
+                r for r in all_requests
                 if r.status == "success" and r.created_at and r.created_at >= day_start
             ])
-            
+
             # Calculate tokens used this month
             monthly_tokens = sum(
-                (r.input_tokens or 0) + (r.output_tokens or 0) 
-                for r in all_requests 
+                (r.input_tokens or 0) + (r.output_tokens or 0)
+                for r in all_requests
                 if r.status == "success" and r.created_at and r.created_at >= month_start
             )
-            
+
             return {
                 "user_id": user_id,
                 "role": user.role,

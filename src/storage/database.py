@@ -1,18 +1,20 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import QueuePool
-from contextlib import contextmanager
 import os
+from contextlib import contextmanager
 from typing import Generator
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import QueuePool
+
 from src.storage.models import Base
+
 
 class DatabaseManager:
     def __init__(self, database_url: str | None = None):
         self.database_url = database_url or os.getenv("DATABASE_URL")
         if not self.database_url:
             raise ValueError("DATABASE_URL is required")
-        
+
         self.engine = create_engine(
             self.database_url,
             poolclass=QueuePool,
@@ -22,7 +24,7 @@ class DatabaseManager:
             echo=os.getenv("SQL_ECHO", "false").lower() == "true"
         )
         self.SessionLocal = sessionmaker(bind=self.engine, autocommit=False, autoflush=False)
-    
+
     @contextmanager
     def get_session(self) -> Generator[Session, None, None]:
         """Context manager cho session - tự động commit/rollback"""
@@ -35,22 +37,23 @@ class DatabaseManager:
             raise
         finally:
             session.close()
-    
+
     def create_tables(self):
         """Tạo tất cả bảng (dùng cho development)"""
         Base.metadata.create_all(bind=self.engine)
-    
+
     def drop_tables(self):
         """Xóa tất cả bảng (dùng cho testing)"""
         Base.metadata.drop_all(bind=self.engine)
-    
+
     def get_stats(self) -> dict:
         """Thống kê nhanh"""
         with self.get_session() as session:
-            from sqlalchemy import func, text
-            from src.storage.models.user import User
+            from sqlalchemy import func
+
             from src.storage.models.spell_grammar_request import SpellGrammarRequest
-            
+            from src.storage.models.user import User
+
             user_count = session.query(func.count(User.id)).scalar()
             request_count = session.query(func.count(SpellGrammarRequest.id)).scalar()
             return {

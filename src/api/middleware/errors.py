@@ -1,10 +1,17 @@
 from __future__ import annotations
 
 import logging
+
 from fastapi import HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from sqlalchemy.exc import OperationalError, DatabaseError, IntegrityError, ProgrammingError, DataError
+from sqlalchemy.exc import (
+    DatabaseError,
+    DataError,
+    IntegrityError,
+    OperationalError,
+    ProgrammingError,
+)
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 try:

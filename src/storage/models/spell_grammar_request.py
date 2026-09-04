@@ -1,6 +1,7 @@
-from sqlalchemy import Column, String, Integer, Float, Text, JSON, ForeignKey, DateTime, Index
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Float, ForeignKey, Index, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship
+
 from src.storage.base import Base, TimestampMixin, generate_uuid
 
 

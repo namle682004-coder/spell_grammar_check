@@ -1,9 +1,9 @@
-import os
 from datetime import datetime
-from fastapi import APIRouter, Response, status
-from fastapi.responses import JSONResponse
+
 import httpx
 import psutil
+from fastapi import APIRouter, status
+from fastapi.responses import JSONResponse
 
 from src.inference.vllm_client import get_vllm_base_url
 
@@ -24,6 +24,7 @@ async def health_check():
 async def _check_db_healthy() -> tuple[bool, str]:
     try:
         from sqlalchemy import text
+
         from src.storage.database import get_db_manager
         db = get_db_manager()
         with db.get_session() as session:

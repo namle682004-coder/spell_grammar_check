@@ -1,8 +1,6 @@
 """Dataset utilities for SFT training."""
 from __future__ import annotations
 
-from typing import Any
-
 from datasets import Dataset
 from loguru import logger
 
