@@ -1,0 +1,41 @@
+{
+  "base": {
+    "bertscore_recall": 0.8956,
+    "max_pred_length": 212,
+    "avg_pred_length_words": 183.8,
+    "bertscore_precision": 0.8261,
+    "rougeLsum": 0.1412,
+    "rougeL": 0.136,
+    "min_pred_length": 92,
+    "bertscore_f1": 0.8593,
+    "rouge1": 0.1448,
+    "num_samples": 20,
+    "rouge2": 0.0995
+  },
+  "finetuned": {
+    "bertscore_recall": 0.9276,
+    "max_pred_length": 78,
+    "avg_pred_length_words": 24.0,
+    "bertscore_precision": 0.9339,
+    "rougeLsum": 0.6828,
+    "rougeL": 0.6846,
+    "min_pred_length": 10,
+    "bertscore_f1": 0.9306,
+    "rouge1": 0.704,
+    "num_samples": 20,
+    "rouge2": 0.5174
+  },
+  "delta": {
+    "bertscore_recall": 0.032,
+    "max_pred_length": -134,
+    "avg_pred_length_words": -159.8,
+    "bertscore_precision": 0.1078,
+    "rougeLsum": 0.5416,
+    "rougeL": 0.5486,
+    "min_pred_length": -82,
+    "bertscore_f1": 0.0713,
+    "rouge1": 0.5592,
+    "num_samples": 0,
+    "rouge2": 0.4179
+  }
+}

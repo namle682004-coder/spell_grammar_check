@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  spell_grammar_db:
+    image: postgres:16-alpine
+    container_name: spell_grammar_postgres
+    environment:
+      POSTGRES_USER: spellgrammar_user
+      POSTGRES_PASSWORD: spellgrammar_pass
+      POSTGRES_DB: spell_grammar_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - spell_grammar_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spellgrammar_user -d spell_grammar_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spell_grammar_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: spell_grammar_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@spellgrammar.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - spell_grammar_db
+    networks:
+      - spell_grammar_network
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: spell_grammar_api
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql+psycopg://spellgrammar_user:spellgrammar_pass@spell_grammar_db:5432/spell_grammar_db
+      JWT_SECRET: change-me-in-production
+      CORS_ORIGINS: http://localhost:3000,http://localhost:8080
+      VLLM_BASE_URL: http://vllm:8000
+      ENV: development
+    depends_on:
+      spell_grammar_db:
+        condition: service_healthy
+    networks:
+      - spell_grammar_network
+
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: spell_grammar_vllm
+    profiles:
+      - gpu
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../outputs:/models:ro
+    command: >
+      --model /models/production/current
+      --host 0.0.0.0
+      --port 8000
+      --gpu-memory-utilization 0.4
+      --max-model-len 256
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - spell_grammar_network
+
+networks:
+  spell_grammar_network:
+    driver: bridge
+
+volumes:
+  spell_grammar_postgres_data:

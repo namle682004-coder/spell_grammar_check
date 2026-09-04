@@ -1,0 +1,43 @@
+project_name: spell-grammar-check
+run_name: "base-eval"
+seed: 42
+
+model:
+  model_id: "Qwen/Qwen2.5-1.5B-Instruct"
+  is_adapter: false
+  base_model_id: null
+  load_in_4bit: false
+  max_seq_length: 1028
+  dtype: null
+
+dataset:
+  source_type: local
+  processed_dir: data/processed/shynbui # đọc test.jsonl đã được prepare_data tạo ra
+
+eval:
+  splits:
+    - test
+  decoding_profile: benchmark_profile
+  temperature: 0.6
+  top_p: 0.95
+  max_new_tokens: 256
+  batch_size: 2
+
+# decoding profiles
+decoding_profiles:
+  benchmark_profile:
+    temperature: 0.6
+    top_p: 0.95
+    do_sample: true
+    max_new_tokens: 256
+  summary_profile:
+    temperature: 0.1
+    top_p: 0.9
+    do_sample: true
+    max_new_tokens: 256
+
+save:
+  predictions_dir: outputs/predictions
+  metrics_dir: outputs/metrics
+  prefix: base
+  versioned: true

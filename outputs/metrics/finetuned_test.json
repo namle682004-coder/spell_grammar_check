@@ -1,0 +1,15 @@
+{
+  "rouge1": 0.704,
+  "rouge2": 0.5174,
+  "rougeL": 0.6846,
+  "rougeLsum": 0.6828,
+  "bertscore_precision": 0.9339,
+  "bertscore_recall": 0.9276,
+  "bertscore_f1": 0.9306,
+  "avg_pred_length_words": 24.0,
+  "min_pred_length": 10,
+  "max_pred_length": 78,
+  "num_samples": 20,
+  "split": "test",
+  "prefix": "finetuned"
+}

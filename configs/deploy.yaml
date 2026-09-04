@@ -1,0 +1,14 @@
+run_name: vietnamese-grammar-qwen1.5b-shynbui-lora
+
+model:
+  merged_dir: outputs/merged/vietnamese-grammar-qwen1.5b-shynbui-lora
+  max_seq_length: 256
+  dtype: float16
+
+deploy:
+  host: 0.0.0.0
+  port: 8000
+  gpu_memory_utilization: 0.40
+  max_model_len: 256
+  extra_args: ""
+  health_check_timeout: 120

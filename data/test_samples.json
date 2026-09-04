@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "input": "Toi di hoc bang xe dap.",
+    "expected": "Tôi đi học bằng xe đạp.",
+    "language": "vi"
+  },
+  {
+    "id": "2",
+    "input": "She go to school yesterday.",
+    "expected": "She went to school yesterday.",
+    "language": "en"
+  },
+  {
+    "id": "3",
+    "input": "Anh ây rat thong minh.",
+    "expected": "Anh ấy rất thông minh.",
+    "language": "vi"
+  },
+  {
+    "id": "4",
+    "input": "I has a car.",
+    "expected": "I have a car.",
+    "language": "en"
+  },
+  {
+    "id": "5",
+    "input": "Chung toi dang hoc bai.",
+    "expected": "Chúng tôi đang học bài.",
+    "language": "vi"
+  }
+]

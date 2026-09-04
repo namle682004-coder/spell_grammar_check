@@ -1,0 +1,137 @@
+project_name: spell-grammar-check
+run_name: "vietnamese-grammar-qwen1.5b-shynbui-lora"
+seed: 42
+
+# dataset:
+#   source_type: local               # local: đọc từ data/raw/multi_news_vietnamese_vims/*.json
+#   repo_id: "cngvng/multi_news_vietnamese_vims"
+#   subset: null
+#   revision: null
+#   private: true
+#   raw_dir: data/raw/multi_news_vietnamese_vims
+#   processed_dir: data/processed
+#   max_train_samples: 100           # giới hạn 100 samples để chạy nhanh
+#   max_val_samples: 20
+#   max_test_samples: 20
+
+dataset:
+  source_type: local # dùng dataset đã prepare sẵn ở data/processed/shynbui/test.jsonl
+  repo_id: "ShynBui/Vietnamese_spelling_error"
+  subset: null
+  revision: null
+  private: false # dataset public
+  raw_dir: data/raw/shynbui/json # đọc từ thư mục này
+  processed_dir: data/processed/shynbui
+  # Level 1: test nhanh (cắt 100 sample)
+  max_train_samples: null # không dùng train set vì chỉ test inference
+  max_val_samples: null
+  max_test_samples: null
+
+# preprocess:
+#   prompt_style: instruction        # instruction | chat
+#   instruction_template: "Hãy viết một bản tóm tắt ngắn gọn, súc tích dựa trên các bài báo sau:\n\n{source_text}\n\nTóm tắt:"
+#   doc_separator: "\n\n[DOC_SEP]\n\n"
+#   max_source_tokens: 2048          # giảm xuống để fit memory nhanh hơn
+#   max_target_tokens: 384
+#   truncation_strategy: head_tail
+#   max_docs: 4                      # giới hạn 4 doc/sample để tránh OOM
+
+preprocess:
+  prompt_style: instruction
+
+  instruction_template: |
+    Sửa lỗi chính tả và ngữ pháp cho đoạn văn sau. Giữ nguyên ý nghĩa:
+
+    {error_text}
+
+    Đoạn đã sửa:
+
+  doc_separator: "\n"
+  max_source_tokens: 512
+  max_target_tokens: 512
+  truncation_strategy: tail
+  max_docs: 1
+
+model:
+  base_model_id: "Qwen/Qwen2.5-1.5B-Instruct"
+  load_in_4bit: true
+  max_seq_length: 128
+  dtype: null # null = auto
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+  bias: "none"
+  use_gradient_checkpointing: "unsloth"
+
+train:
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+
+  gradient_accumulation_steps: 16
+
+  learning_rate: 1e-4
+  num_train_epochs: 2
+
+  eval_steps: 20
+  save_steps: 20
+  logging_steps: 5
+
+  warmup_ratio: 0.05
+
+  bf16: true
+  fp16: false
+
+  gradient_checkpointing: true
+
+  dataloader_num_workers: 0
+
+  optim: "paged_adamw_8bit"
+
+  group_by_length: true
+
+  report_to: wandb
+
+  sample_train_size: 1000
+  sample_val_size: 100
+  sample_test_size: 100
+
+# eval:
+#   decoding_profile: summary_profile
+#   temperature: 0.1
+#   top_p: 0.9
+#   max_new_tokens: 256
+#   batch_size: 8
+
+eval:
+  decoding_profile: grammar_profile # đổi tên cho đúng task
+  temperature: 0.1 # giữ, thấp để output ổn định
+  top_p: 0.95 # tăng nhẹ lên 0.95
+  max_new_tokens: 128 # giảm vì output ngắn (chỉ câu đã sửa)
+  batch_size: 1 # quan trọng: batch=1 cho 4GB VRAM
+
+save:
+  adapter_dir: outputs/adapters
+  merged_dir: outputs/merged
+  metrics_dir: outputs/metrics
+  predictions_dir: outputs/predictions
+  logs_dir: outputs/logs
+  versioned: true # train metrics -> metrics/runs/{run_name}/{run_id}/
+  merge_16bit: true
+  maximum_memory_usage: 0.7 # unsloth merge param
+
+deploy:
+  enabled: false
+  script_path: scripts/run_deploy_vllm.sh
+  host: 0.0.0.0
+  port: 8000
+  extra_args: ""

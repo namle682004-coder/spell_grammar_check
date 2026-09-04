@@ -1,0 +1,44 @@
+{
+  "metrics": {
+    "cer": 0.6545454545454545,
+    "wer": 0.72,
+    "gleu": 0.0
+  },
+  "samples": [
+    {
+      "id": "1",
+      "input": "Toi di hoc bang xe dap.",
+      "raw_prediction": "sai\n\nGiải thích:\n- \"Di\" nên viết là \"đi\".\n- \"Hoc\" nên viết là \"học\".\n- \"Bang\" nên viết là \"bằng\". \n\nLưu ý: Câu gốc có thể được hiểu là \"Tôi đi học bằng xe đạp\", nhưng do lỗi chính tả và ngữ pháp, câu này không đúng. Do đó, câu đã sửa chỉ là \"sai\". Để hoàn thiện câu, bạn có thể thay đổi thành \"Tôi đi học bằng xe đạp\". Tuy nhiên, câu gốc vẫn không đúng theo quy tắc tiếng Việt. Bạn có muốn",
+      "extracted_correction": "sai\n\nGiải thích:\n- \"Di\" nên viết là \"đi\".",
+      "expected": "Tôi đi học bằng xe đạp."
+    },
+    {
+      "id": "2",
+      "input": "She go to school yesterday.",
+      "raw_prediction": "sai\n\nShe went to school yesterday. \n\nGiải thích:\n- \"go\" nên viết thành \"went\"\n- \"to\" nên được bỏ đi vì là từ phụ của động từ \"go\"\n\nLưu ý: Trong tiếng Việt, khi dùng động từ \"đi\" (go), thì không cần thêm từ \"to\". Do đó, câu gốc có thể được sửa lại như sau:\n\nShe goes to school yesterday. \n\nTrên đây là một số gợi ý cho việc sửa chữa lỗi chính tả và ngữ pháp trong câu. Tuy nhiên, để đảm bảo sự chính xác và phù hợp với ngữ cảnh, bạn",
+      "extracted_correction": "sai",
+      "expected": "She went to school yesterday."
+    },
+    {
+      "id": "3",
+      "input": "Anh ây rat thong minh.",
+      "raw_prediction": "Anh ái rất thông minh.\n\nGiải thích:\n- \"ây\" được chuyển thành \"ái\".\n- \"rat\" được chuyển thành \"rất\".\n- \"thong minh\" được chuyển thành \"thông minh\". \n\nLưu ý rằng trong tiếng Việt, \"â\" và \"á\" là hai ký tự khác nhau, nên cần chú ý khi chuyển đổi từ một đến另一. Trong trường hợp này, chúng ta sử dụng \"ái\" thay vì \"â\", vì nó có nghĩa tương đương với \"â\". Về phần \"thông minh\", nó không",
+      "extracted_correction": "Anh ái rất thông minh.",
+      "expected": "Anh ấy rất thông minh."
+    },
+    {
+      "id": "4",
+      "input": "I has a car.",
+      "raw_prediction": "lỗi chính tả và ngữ pháp trong câu sau là \"I have a car\". \n\nGiải thích:\n- \"has\" nên được viết thành \"have\".\n- \"a\" nên được viết thành \"an\", vì số lượng xe là 1 (một). \n\nVì vậy, câu đã sửa đúng về cả hai điểm chính tả và ngữ pháp. Bạn có thể thử kiểm tra lại bằng các công cụ kiểm tra lỗi chính tả và ngữ pháp để chắc chắn rằng câu đã được sửa đúng. Nếu bạn đang sử dụng một ngôn ngữ khác ngoài tiếng Việt, hãy thay đổi \"car\" thành từ phù hợp với ngôn",
+      "extracted_correction": "I have a car",
+      "expected": "I have a car."
+    },
+    {
+      "id": "5",
+      "input": "Chung toi dang hoc bai.",
+      "raw_prediction": "sai\n\nChung toi dang hoc bài. \n\nGiải thích:\n- \"Chung\" được viết thành hai chữ nên phải ghi lại là \"sai\".\n- \"Dang\" có thể là \"dàng\", \"đang\" hoặc \"đã\". Trong trường hợp này, \"dàng\" là một từ chỉ số lượng, nên không cần phải ghi lại.\n- \"Hoc\" có thể là \"học\" hoặc \"hoặc học\". Trong trường hợp này, \"hoặc học\" là một từ chỉ số lượng, nên không cần phải ghi lại.\n- \"Bai",
+      "extracted_correction": "sai",
+      "expected": "Chúng tôi đang học bài."
+    }
+  ]
+}

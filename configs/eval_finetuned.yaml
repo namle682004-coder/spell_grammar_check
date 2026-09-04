@@ -1,0 +1,45 @@
+# project_name: chapter06-finetune
+# run_name: eval-finetuned
+project_name: spell-grammar-check
+run_name: "vietnamese-grammar-qwen1.5b-shynbui-lora"
+seed: 42
+
+model:
+  model_id: outputs/merged/vietnamese-grammar-qwen1.5b-shynbui-lora # đổi tên cho đúng
+  is_adapter: false
+  base_model_id: null
+  load_in_4bit: true # 4GB cần bật 4bit
+  max_seq_length: 512 # giảm từ 4096 xuống 512
+  dtype: null
+
+dataset:
+  source_type: local
+  processed_dir: data/processed/shynbui # đọc test.jsonl đã được prepare_data tạo ra
+
+eval:
+  splits:
+    - test
+  decoding_profile: grammar_profile # đổi tên
+  temperature: 0.1
+  top_p: 0.95 # tăng lên 0.95
+  max_new_tokens: 128 # giảm từ 256 xuống 128
+  batch_size: 1 # giảm từ 2 xuống 1 (quan trọng)
+
+decoding_profiles:
+  benchmark_profile:
+    temperature: 0.6
+    top_p: 0.95
+    do_sample: true
+    max_new_tokens: 256
+  summary_profile:
+    temperature: 0.1
+    top_p: 0.9
+    do_sample: true
+    max_new_tokens: 256
+
+save:
+  predictions_dir: outputs/predictions
+  metrics_dir: outputs/metrics
+  prefix: finetuned
+  versioned: true # metrics/predictions -> runs/{run_name}/{run_id}/
+  # run_id: null   # optional; default = UTC timestamp per eval

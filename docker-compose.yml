@@ -1,0 +1,59 @@
+services:
+  spell_grammar_db:
+    image: postgres:16-alpine
+    container_name: spell_grammar_postgres
+    environment:
+      POSTGRES_USER: spellgrammar_user
+      POSTGRES_PASSWORD: spellgrammar_pass
+      POSTGRES_DB: spell_grammar_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - spell_grammar_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U spellgrammar_user -d spell_grammar_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - spell_grammar_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: spell_grammar_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@spellgrammar.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - spell_grammar_db
+    networks:
+      - spell_grammar_network
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: spell_grammar_api
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://spellgrammar_user:spellgrammar_pass@spell_grammar_db:5432/spell_grammar_db
+      API_PORT: "8080"
+      JWT_SECRET: ${JWT_SECRET:-change-me}
+      ENV: ${ENV:-development}
+    depends_on:
+      spell_grammar_db:
+        condition: service_healthy
+    networks:
+      - spell_grammar_network
+
+networks:
+  spell_grammar_network:
+    driver: bridge
+
+volumes:
+  spell_grammar_postgres_data:
