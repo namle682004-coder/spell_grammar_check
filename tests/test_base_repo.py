@@ -1,8 +1,7 @@
-import pytest
 from unittest.mock import MagicMock
 
-from src.storage.repositories.base_repo import BaseRepository
 from src.storage.models.user import User
+from src.storage.repositories.base_repo import BaseRepository
 
 
 def test_base_repository_create():

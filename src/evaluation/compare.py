@@ -2,11 +2,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 from loguru import logger
 
-from src.utils.io import read_json, write_json
+from src.utils.io import read_json
 
 
 def compare_metrics(base_path: str, finetuned_path: str) -> dict:

@@ -10,15 +10,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api.middleware.errors import register_exception_handlers
 from src.api.middleware.logging_middleware import init_middleware as init_logging_middleware
 from src.api.routes import (
+    api_keys,
     auth,
     check,
-    stats,
-    quota,
-    api_keys,
     corrections,
     health,
-    predict,
     models,
+    predict,
+    quota,
+    stats,
 )
 
 app = FastAPI(

@@ -1,6 +1,8 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from typing import Optional
+
 from src.api.dependencies import get_current_user_from_jwt
 from src.services.auth_service import AuthService
 

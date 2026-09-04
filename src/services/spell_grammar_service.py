@@ -2,31 +2,32 @@
 import time
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+
+from src.inference.cache import global_cache
 from src.services.llm_service import LLMService
 from src.storage.database import get_db_manager
 from src.storage.repositories import (
-    UserRepository,
     ApiKeyRepository,
-    RequestRepository,
     CorrectionRepository,
-    UsageRepository
+    RequestRepository,
+    UsageRepository,
 )
 
 
 class SpellGrammarService:
     def __init__(self):
         self.llm_service = LLMService()
-    
+
     def _get_or_create_quota(self, usage_repo: UsageRepository, user_id: str):
         """Lấy quota hiện tại hoặc tạo mới nếu chưa có"""
         quota = usage_repo.get_quota_by_user_id(user_id)
-        
+
         if not quota:
             now = datetime.utcnow()
             month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             month_end = (month_start + timedelta(days=32)).replace(day=1)
-            
+
             quota = usage_repo.create_quota(
                 user_id=user_id,
                 period="monthly",
@@ -43,22 +44,22 @@ class SpellGrammarService:
                 is_exceeded=False,
                 exceeded_reason=""
             )
-        
+
         return quota
-    
+
     def _check_quota(self, quota) -> tuple:
         """Kiểm tra quota còn không, trả về (allowed, reason)"""
         if quota.requests_used >= quota.request_limit:
             return False, f"Monthly request limit exceeded: {quota.requests_used}/{quota.request_limit}"
-        
+
         if quota.tokens_used >= quota.token_limit:
             return False, f"Monthly token limit exceeded: {quota.tokens_used}/{quota.token_limit}"
-        
+
         if quota.cost_used_usd >= quota.cost_limit_usd:
             return False, f"Monthly budget exceeded: ${quota.cost_used_usd:.2f}/${quota.cost_limit_usd:.2f}"
-        
+
         return True, "OK"
-    
+
     def _consume_quota(self, usage_repo: UsageRepository, quota, tokens: int, cost: float):
         """Trừ quota sau khi xử lý thành công"""
         usage_repo.update_quota(
@@ -111,9 +112,9 @@ class SpellGrammarService:
         with db.get_session() as session:
             request_repo = RequestRepository(session)
             usage_repo = UsageRepository(session)
-            
+
             quota = self._get_or_create_quota(usage_repo, user_id)
-            
+
             allowed, reason = self._check_quota(quota)
             if not allowed:
                 return {
@@ -125,7 +126,7 @@ class SpellGrammarService:
                         "budget_usd": 0
                     }
                 }
-            
+
             request = request_repo.create(
                 request_id=request_id,
                 user_id=user_id,

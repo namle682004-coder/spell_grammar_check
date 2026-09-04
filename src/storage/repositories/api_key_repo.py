@@ -1,6 +1,6 @@
+import secrets
 from typing import List
 
-import secrets
 from sqlalchemy.orm import Session
 
 from src.storage.models.api_key import ApiKey

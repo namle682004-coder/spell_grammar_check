@@ -1,8 +1,9 @@
+
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional
+
 from src.api.dependencies import get_current_user
-from src.services.models import get_model_service
 from src.services.inference import get_inference_service
+from src.services.models import get_model_service
 
 router = APIRouter(prefix="/v1/models", tags=["Model Management"])
 
@@ -39,10 +40,10 @@ async def load_model(
     # Check if user has permission (only admin)
     if user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    
+
     inference_service = get_inference_service()
     result = inference_service.load_model(model_name)
-    
+
     return {
         "success": True,
         "model": result,
@@ -57,7 +58,7 @@ async def get_model_status(
     """Get model load status"""
     inference_service = get_inference_service()
     info = inference_service.get_model_info()
-    
+
     for model in info.get("models", []):
         if model["name"] == model_name:
             return {
@@ -65,5 +66,5 @@ async def get_model_status(
                 "is_loaded": model.get("is_loaded", False),
                 "current_model": info.get("current_model")
             }
-    
+
     raise HTTPException(status_code=404, detail="Model not found")

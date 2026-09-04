@@ -5,7 +5,6 @@ from typing import Any
 
 from src.config import Config
 
-
 DECODING_PROFILES = {
     "benchmark_profile": {
         "temperature": 0.6,

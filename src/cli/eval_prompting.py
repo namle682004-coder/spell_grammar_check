@@ -1,11 +1,12 @@
 
 #!/usr/bin/env python
-from src.inference import GrammarCorrector
-from src.config import load_config
 import argparse
-import sys
 import re
+import sys
 from pathlib import Path
+
+from src.config import load_config
+from src.inference import GrammarCorrector
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 

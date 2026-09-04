@@ -3,18 +3,13 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-import torch
 
 from datasets import load_dataset
 from loguru import logger
 from transformers import (
-    AutoModelForCausalLM,
-    AutoTokenizer,
     DataCollatorForLanguageModeling,
-    TrainingArguments,
 )
-
-from trl import SFTTrainer, SFTConfig
+from trl import SFTConfig
 from unsloth import FastLanguageModel, UnslothTrainer
 
 from src.config import Config

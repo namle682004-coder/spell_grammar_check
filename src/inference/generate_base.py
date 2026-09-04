@@ -8,7 +8,7 @@ from typing import Any
 from loguru import logger
 
 from src.config import Config
-from src.inference.decoding import get_decoding_kwargs, generate_batch
+from src.inference.decoding import generate_batch, get_decoding_kwargs
 from src.utils.artifacts import (
     ArtifactRun,
     get_reference_text,
@@ -17,7 +17,7 @@ from src.utils.artifacts import (
     update_latest_pointer,
     write_run_manifest,
 )
-from src.utils.io import read_jsonl, write_jsonl, ensure_dir
+from src.utils.io import ensure_dir, read_jsonl, write_jsonl
 
 
 def generate_with_base(cfg: Config) -> None:

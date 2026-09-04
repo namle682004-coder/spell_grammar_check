@@ -1,4 +1,3 @@
-import time
 from src.inference.cache import ResponseCache
 
 

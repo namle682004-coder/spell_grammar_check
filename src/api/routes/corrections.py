@@ -1,10 +1,12 @@
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, List
+from typing import Optional
+
+from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
+
 from src.api.dependencies import get_current_user
 from src.storage.database import get_db_manager
-from src.storage.repositories import RequestRepository, CorrectionRepository
-from pydantic import BaseModel, Field
+from src.storage.repositories import CorrectionRepository, RequestRepository
 
 router = APIRouter(prefix="/v1/corrections", tags=["Correction History"])
 
@@ -25,33 +27,33 @@ async def get_correction_history(
 ):
     """Get correction history for current user"""
     db = get_db_manager()
-    
+
     with db.get_session() as session:
         request_repo = RequestRepository(session)
         correction_repo = CorrectionRepository(session)
-        
+
         # Get user's requests (status = "success")
         all_requests = request_repo.get_all(user_id=user["user_id"])
         requests = [r for r in all_requests if r.status == "success"]
         request_ids = [r.id for r in requests]
-        
+
         if not request_ids:
             return {"corrections": [], "total": 0}
-        
+
         # Get corrections for those requests
         corrections = []
         for req_id in request_ids:
             corrs = correction_repo.get_by_request(req_id)
             corrections.extend(corrs)
-        
+
         # Filter by type if specified
         if correction_type:
             corrections = [c for c in corrections if c.correction_type == correction_type]
-        
+
         # Paginate
         total = len(corrections)
         corrections = corrections[offset:offset + limit]
-        
+
         return {
             "total": total,
             "offset": offset,
@@ -77,12 +79,13 @@ async def get_correction_stats(
 ):
     """Get correction statistics"""
     db = get_db_manager()
-    
+
     with db.get_session() as session:
         from sqlalchemy import func
+
         from src.storage.models.correction_detail import CorrectionDetail
         from src.storage.models.spell_grammar_request import SpellGrammarRequest
-        
+
         # Count by correction type
         stats = session.query(
             CorrectionDetail.correction_type,
@@ -95,7 +98,7 @@ async def get_correction_stats(
         ).group_by(
             CorrectionDetail.correction_type
         ).all()
-        
+
         return {
             "total_corrections": sum(s.count for s in stats),
             "breakdown": {

@@ -30,6 +30,7 @@ def download_dataset(cfg: Config) -> object:
 
 def _load_hf_dataset(cfg: Config) -> object:
     import os
+
     from datasets import load_dataset
 
     repo_id = cfg.dataset.repo_id
@@ -54,8 +55,9 @@ def _load_hf_dataset(cfg: Config) -> object:
 def _load_hf_snapshot(cfg: Config) -> object:
     """Download a full repo snapshot (for custom private dataset repos)."""
     import os
-    from huggingface_hub import snapshot_download
+
     from datasets import load_from_disk
+    from huggingface_hub import snapshot_download
 
     repo_id = cfg.dataset.repo_id
     raw_dir = Path(cfg.dataset.raw_dir) / repo_id.replace("/", "--")
@@ -77,6 +79,7 @@ def _load_local(cfg: Config) -> object:
     """Load dataset from local raw_dir JSON files or processed JSONL."""
     import json
     from pathlib import Path
+
     from datasets import Dataset, DatasetDict
 
     # Priority 1: raw_dir JSON files (train.json / validation.json / test.json)

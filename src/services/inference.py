@@ -1,21 +1,24 @@
 import time
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
+
 import torch
+
+from src.api.middleware.errors import ApiError, ModelLoadError
 from src.inference import predictor
 from src.inference.predictor import BASE_MODEL, FINETUNE_MODEL
-from src.api.middleware.errors import ApiError, ModelLoadError
+
 
 class InferenceService:
     """Service for local model inference"""
-    
+
     def __init__(self):
         self.current_model = None
         self.model_cache = {}
-    
+
     def load_model(self, model_name: str = "finetune") -> str:
         """Load model by name"""
         model_path = self._resolve_model_path(model_name)
-        
+
         try:
             predictor.load_model(model_path)
             self.current_model = model_name
@@ -24,7 +27,7 @@ class InferenceService:
             raise
         except Exception as exc:
             raise ModelLoadError(f"Failed to load model {model_name}", detail=str(exc))
-    
+
     def _resolve_model_path(self, model_name: str) -> str:
         """Resolve model name to path"""
         model_map = {
@@ -34,15 +37,15 @@ class InferenceService:
             "accurate": FINETUNE_MODEL
         }
         return model_map.get(model_name, FINETUNE_MODEL)
-    
+
     def predict(self, text: str, model_name: str = "finetune") -> Dict[str, Any]:
         """Run inference on text"""
         start_time = time.time()
-        
+
         # Load model if needed
         if self.current_model != model_name:
             self.load_model(model_name)
-        
+
         try:
             from src.inference.predictor import generate_with_usage
 
@@ -76,7 +79,7 @@ class InferenceService:
                 "processing_time_ms": int((time.time() - start_time) * 1000),
                 "model_used": model_name
             }
-    
+
     def _format_errors(self, errors: List[Dict]) -> List[Dict]:
         """Format errors from predictor"""
         formatted = []
@@ -90,7 +93,7 @@ class InferenceService:
                 "suggestion": error.get("suggestion", "")
             })
         return formatted
-    
+
     def batch_predict(self, texts: List[str], model_name: str = "finetune") -> List[Dict[str, Any]]:
         """Run inference on multiple texts"""
         results = []
@@ -98,7 +101,7 @@ class InferenceService:
             result = self.predict(text, model_name)
             results.append(result)
         return results
-    
+
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about available models"""
         return {

@@ -1,8 +1,9 @@
-import os
 import json
-from typing import Dict, Any, List, Optional
+import os
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 
 @dataclass
 class ModelInfo:
@@ -18,11 +19,11 @@ class ModelInfo:
 
 class ModelService:
     """Service for managing multiple models"""
-    
+
     def __init__(self):
         self.models: Dict[str, ModelInfo] = {}
         self._load_model_config()
-    
+
     def _load_model_config(self):
         """Load model configuration from file or environment"""
         # Default models
@@ -44,7 +45,7 @@ class ModelService:
                 speed_ms=80
             )
         }
-        
+
         # Try to load from config file
         config_path = os.getenv("MODEL_CONFIG_PATH", "configs/models.json")
         if os.path.exists(config_path):
@@ -56,7 +57,7 @@ class ModelService:
                             self.models[name] = ModelInfo(**data)
             except Exception as e:
                 print(f"Error loading model config: {e}")
-    
+
     def list_models(self) -> List[Dict[str, Any]]:
         """List all available models"""
         return [
@@ -71,15 +72,15 @@ class ModelService:
             }
             for name, info in self.models.items()
         ]
-    
+
     def get_model(self, model_name: str) -> Optional[ModelInfo]:
         """Get model info by name"""
         return self.models.get(model_name)
-    
+
     def get_default_model(self) -> str:
         """Get default model name"""
         return os.getenv("DEFAULT_MODEL", "finetune")
-    
+
     def get_model_comparison(self) -> Dict[str, Any]:
         """Compare all models"""
         comparison = {
@@ -87,13 +88,13 @@ class ModelService:
             "most_accurate": max(self.models.items(), key=lambda x: x[1].accuracy)[0],
             "smallest": min(self.models.items(), key=lambda x: x[1].size_mb)[0]
         }
-        
+
         return {
             "comparison": comparison,
             "models": self.list_models(),
             "recommendation": self._get_recommendation()
         }
-    
+
     def _get_model_description(self, model_name: str) -> str:
         """Get description for a model"""
         descriptions = {
@@ -101,7 +102,7 @@ class ModelService:
             "finetune": "Fine-tuned model for spell/grammar correction. Best accuracy."
         }
         return descriptions.get(model_name, "Unknown model")
-    
+
     def _get_recommendation(self) -> str:
         """Get model recommendation based on use case"""
         return """
@@ -110,20 +111,20 @@ class ModelService:
         - For real-time applications: Consider 'base' for lower latency
         - For critical grammar checking: Use 'finetune'
         """
-    
+
     def update_model_status(self, model_name: str, is_loaded: bool):
         """Update model load status"""
         if model_name in self.models:
             self.models[model_name].is_loaded = is_loaded
             if is_loaded:
                 self.models[model_name].last_used = datetime.utcnow()
-    
+
     def get_model_stats(self, model_name: str) -> Dict[str, Any]:
         """Get detailed statistics for a model"""
         model = self.models.get(model_name)
         if not model:
             return {"error": "Model not found"}
-        
+
         return {
             "name": model.name,
             "version": model.version,
@@ -134,7 +135,7 @@ class ModelService:
             "last_used": model.last_used.isoformat() if model.last_used else None,
             "estimated_cost_per_1k_chars": self._estimate_cost(model_name)
         }
-    
+
     def _estimate_cost(self, model_name: str) -> float:
         """Estimate cost per 1000 characters"""
         costs = {

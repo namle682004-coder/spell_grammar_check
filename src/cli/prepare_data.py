@@ -2,19 +2,18 @@
 from __future__ import annotations
 
 import argparse
-import random
 from pathlib import Path
 
 from loguru import logger
 
 from src.config import load_config
-from src.utils.env import load_env
-from src.utils.seed import set_seed
-from src.utils.logging import setup_logging
 from src.data.download import download_dataset
+from src.data.manifest import compute_manifest, save_manifest
 from src.data.preprocess import preprocess_sample
 from src.data.split_export import export_splits, subsample
-from src.data.manifest import compute_manifest, save_manifest
+from src.utils.env import load_env
+from src.utils.logging import setup_logging
+from src.utils.seed import set_seed
 
 
 def main():
@@ -36,8 +35,9 @@ def main():
 
     # 2. Load tokenizer for truncation
     try:
-        from transformers import AutoTokenizer
         import os
+
+        from transformers import AutoTokenizer
         tokenizer = AutoTokenizer.from_pretrained(
             str(cfg.model.base_model_id),
             token=os.environ.get("HF_TOKEN"),
